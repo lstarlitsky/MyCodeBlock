@@ -2,4 +2,5 @@ rootProject.name = 'MyCodeBlock'
 include 'Utils'
 include 'MyTest'
 include 'DesignPattern'
+include 'Java8Feature'
 
