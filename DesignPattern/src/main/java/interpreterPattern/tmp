@@ -1,0 +1,113 @@
+package Class.Stack.SeqStack;
+
+import Class.LinearList.LinearList;
+
+public class Calculator {
+    // v2.0 支持操作符: + - * / ( ) 只支持int类型计算,原因是用的int数组来存储的数据
+    // 并且除法运算过程中会产生较大误差, int类型/int类型导致, 尽量避免除法运算
+
+
+    // 返回运算符优先级   0 --> +和-    1 ---> *和/  , 用于入栈和出栈判断
+    // 从栈pop出来的数字和运算符为int类型(这个栈用线性表存储数据)
+    // 不能把左括号设置为优先级最高，否则下一个运算符入栈前左括号会弹出，也不能设为最低，否则左括号入栈前会弹出运算符
+    // 可以把做运算符单独做成方法进行判断
+    public int priority(int ch) {
+        if (ch == '+' || ch == '-') {
+            return 0;
+        } else if (ch == '*' || ch == '/') {
+            return 1;
+        } else {
+            throw new RuntimeException("优先级判断发生错误!");
+        }
+    }
+
+    // 判断类型: 数字或是运算符, 从而进入不同的栈
+    public boolean isOpera(int ch) {
+        return ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '(' || ch == ')';
+    }
+
+    // 判断运算符类型并进行计算
+    public int getResult(int before, int behind, int opera) {
+        switch (opera) {
+            case '+':
+                return before + behind;
+            case '-':
+                return before - behind;
+            case '*':
+                return before * behind;
+            case '/':
+                return before / behind;
+            default:
+                throw new RuntimeException("运算符计算发生错误!");
+        }
+    }
+
+    public int calculate(String expression) {
+        char ch;    // 依次获取的每一个字符
+        int index = 0;  // 用于记录当前字符串的遍历位置
+        int before; // 算数表达式中的前面的数 1*2, 指的是 1
+        int behind; // 后面的数
+        int opera; // 运算符栈弹出的运算符
+        int result; // 每次运算后的结果
+        int finalResult; // 最终结果
+        SeqStack numStack = new SeqStack(new LinearList(expression.length())); // 数字栈
+        SeqStack operaStack = new SeqStack(new LinearList(expression.length())); // 运算符栈
+        while (true) {
+            ch = expression.substring(index, index + 1).charAt(0);
+            // 应该判断 ch 类型
+            if (this.isOpera(ch)) {  // 为运算符(包括左、右括号)
+                // 若符号栈为空，或符号为 '(' , 则入栈
+                if (operaStack.isEmpty() || ch == '(') {
+                    operaStack.push(ch);
+                } else { // 为右括号或其它运算符
+                    // 1. 从数字栈弹出两个整数，从符号栈弹出运算符
+                    // 2. 把运算结果放到数字栈中
+                    // 3. 把符号放到符号栈
+                    // 4. 直到符号栈为 ( ,弹出左括号结束
+                    // 5. 右括号与普通符号不一样的是, 在其它符号弹出后不会入栈!
+                    if (ch == ')') {
+                        while (operaStack.peek() != '(') {
+                            behind = numStack.pop();   // 先弹出来的是算数表达式后面的数 1*2,弹出的是2
+                            before = numStack.pop();     // 后弹出来的是算数表达式前面的数
+                            opera = operaStack.pop();
+                            result = this.getResult(before, behind, opera);
+                            numStack.push(result);
+                        }
+                        operaStack.pop();
+                    } else if (operaStack.peek() == '(') {
+                        operaStack.push(ch);
+                    } else if (this.priority(ch) <= this.priority(operaStack.peek())) {
+                        behind = numStack.pop();   // 先弹出来的是算数表达式后面的数 1*2,弹出的是2
+                        before = numStack.pop();     // 后弹出来的是算数表达式前面的数
+                        opera = operaStack.pop();
+                        result = this.getResult(before, behind, opera);
+                        numStack.push(result);
+                        operaStack.push(ch);     // 不同于右括号，这里符号会入栈!
+                    } else {
+                        operaStack.push(ch);
+                    }
+                }
+                // 为数值类型,直接放入数字栈
+            } else {
+                numStack.push(ch - 48);   // '1'对应的int值为49, 应该减去48, 然后存入数字栈
+            }
+            index++;
+            if (index == expression.length()) {
+                break;
+            }
+        }
+        // 遍历运算符后对符号栈和数字栈剩余元素进行运算
+        while (true) {
+            behind = numStack.pop();   // 先弹出来的是算数表达式后面的数 1*2,弹出的是2
+            before = numStack.pop();     // 后弹出来的是算数表达式前面的数
+            opera = operaStack.pop();
+            result = this.getResult(before, behind, opera);
+            numStack.push(result);
+            if (numStack.length() == 1) {
+                break;
+            }
+        }
+        return numStack.peek();
+    }
+}
+
