@@ -23,6 +23,12 @@ dependencies {
     implementation group: 'org.apache.flink', name: 'flink-table-common', version: FlinkVersion
     // https://mvnrepository.com/artifact/org.apache.flink/flink-clients
     implementation group: 'org.apache.flink', name: 'flink-clients_2.11', version: FlinkVersion
+    // https://mvnrepository.com/artifact/org.apache.flink/flink-connector-hive
+    compileOnly group: 'org.apache.flink', name: 'flink-connector-hive_2.11', version: FlinkVersion
+
+
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
 
 
 }
